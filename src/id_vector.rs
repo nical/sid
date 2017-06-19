@@ -45,8 +45,8 @@ impl<ID: Identifier, Data> IdVec<ID, Data> {
     }
 
     /// Number of elements in the IdVec
-    pub fn len(&self) -> usize {
-        self.data.len()
+    pub fn len(&self) -> ID::Handle {
+        FromIndex::from_index(self.data.len())
     }
 
     /// Return the nth element of the IdVec using an usize index rather than an Id (à la Vec).
@@ -99,10 +99,10 @@ impl<ID: Identifier, Data: Default> IdVec<ID, Data> {
     /// Set the value for a certain Id, possibly adding default values if the Id's index is Greater
     /// than the size of the underlying vector.
     pub fn set(&mut self, id: ID, val: Data) {
-        while self.len() < id.to_index() {
+        while self.len().to_index() < id.to_index() {
             self.push(Data::default());
         }
-        if self.len() == id.to_index() {
+        if self.len().to_index() == id.to_index() {
             self.push(val);
         } else {
             self[id] = val;

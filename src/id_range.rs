@@ -101,7 +101,7 @@ impl<T, H: IntegerHandle> IdRange<T, H> {
         if self.is_empty() {
             return None;
         }
-        return Some(IdRange::new((self.start - H::one())..self.end));
+        return Some(IdRange::new((self.start + H::one())..self.end));
     }
 
     #[inline]
