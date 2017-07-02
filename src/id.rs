@@ -1,6 +1,7 @@
 use {IdRange, IntegerHandle, Identifier, FromIndex, ToIndex};
 use std::marker::PhantomData;
 use std::fmt;
+use std::ops::{Add, Sub};
 use std::hash::{Hash, Hasher};
 use num_traits::One;
 
@@ -19,12 +20,14 @@ impl<T, H: fmt::Display> fmt::Debug for Id<T, H> {
 impl<T, H: Copy> Copy for Id<T, H> {}
 
 impl<T, H: Copy> Clone for Id<T, H> {
+    #[inline]
     fn clone(&self) -> Id<T, H> {
         *self
     }
 }
 
 impl<T, H: PartialEq> PartialEq for Id<T, H> {
+    #[inline]
     fn eq(&self, other: &Id<T, H>) -> bool {
         self.handle.eq(&other.handle)
     }
@@ -33,6 +36,7 @@ impl<T, H: PartialEq> PartialEq for Id<T, H> {
 impl<T, H: Copy + Eq> Eq for Id<T, H> {}
 
 impl<T, H: IntegerHandle> Id<T, H> {
+    #[inline]
     pub fn new(idx: H) -> Id<T, H> {
         Id {
             handle: idx,
@@ -40,6 +44,7 @@ impl<T, H: IntegerHandle> Id<T, H> {
         }
     }
 
+    #[inline]
     pub fn as_range(&self) -> IdRange<T, H> {
         IdRange::new(self.handle..self.handle + One::one())
     }
@@ -51,19 +56,38 @@ impl<T, H: IntegerHandle> Identifier for Id<T, H> {
 }
 
 impl<T, H: ToIndex> ToIndex for Id<T, H> {
+    #[inline]
     fn to_index(&self) -> usize {
         self.handle.to_index()
     }
 }
 
 impl<T, H: IntegerHandle> FromIndex for Id<T, H> {
+    #[inline]
     fn from_index(idx: usize) -> Id<T, H> {
         Id::new(FromIndex::from_index(idx))
     }
 }
 
 impl<T, Handle: Hash> Hash for Id<T, Handle> {
+    #[inline]
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.handle.hash(state);
+    }
+}
+
+impl<T, Handle: IntegerHandle> Add<Handle> for Id<T, Handle> {
+    type Output = Self;
+    #[inline]
+    fn add(self, offset: Handle) -> Self {
+        Id::new(self.handle + offset)
+    }
+}
+
+impl<T, Handle: IntegerHandle> Sub<Handle> for Id<T, Handle> {
+    type Output = Self;
+    #[inline]
+    fn sub(self, offset: Handle) -> Self {
+        Id::new(self.handle - offset)
     }
 }
