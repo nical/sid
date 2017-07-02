@@ -4,6 +4,7 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use num_traits::One;
 
+#[repr(C)]
 pub struct Id<Tag, Handle = u32> {
     pub handle: Handle,
     pub _marker: PhantomData<Tag>,
