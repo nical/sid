@@ -9,12 +9,12 @@ use num_traits::Zero;
 /// Similar to Vec except that it is indexed using an Id rather than an usize index.
 /// if the stored type implements Default, IdVec can also use the set(...) method which can
 /// grow the vector to accomodate for the requested id.
-pub struct IdVec<ID: Identifier, Data> {
-    data: Vec<Data>,
+pub struct IdVec<ID: Identifier, T> {
+    data: Vec<T>,
     _idtype: PhantomData<ID>,
 }
 
-impl<ID: Identifier, Data> IdVec<ID, Data> {
+impl<ID: Identifier, T> IdVec<ID, T> {
     /// Create an empty IdVec
     #[inline]
     pub fn new() -> Self {
@@ -35,7 +35,7 @@ impl<ID: Identifier, Data> IdVec<ID, Data> {
 
     /// Create an IdVec by recycling a Vec and its content.
     #[inline]
-    pub fn from_vec(vec: Vec<Data>) -> Self {
+    pub fn from_vec(vec: Vec<T>) -> Self {
         IdVec {
             data: vec,
             _idtype: PhantomData,
@@ -44,8 +44,14 @@ impl<ID: Identifier, Data> IdVec<ID, Data> {
 
     /// Consume the IdVec and create a Vec.
     #[inline]
-    pub fn into_vec(self) -> Vec<Data> {
+    pub fn into_vec(self) -> Vec<T> {
         self.data
+    }
+
+    /// Exposes the internal Vec.
+    #[inline]
+    pub fn as_vec(&self) -> &Vec<T> {
+        &self.data
     }
 
     /// Number of elements in the IdVec
@@ -54,43 +60,117 @@ impl<ID: Identifier, Data> IdVec<ID, Data> {
         FromIndex::from_index(self.data.len())
     }
 
-    /// Return the nth element of the IdVec using an usize index rather than an Id (à la Vec).
+    /// Returns true if the vector contains no elements.
     #[inline]
-    pub fn nth(&self, idx: usize) -> &Data {
-        &self.data[idx]
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+
+    /// Extracts a slice containing the entire vector.
+    #[inline]
+    pub fn as_slice(&self) -> IdSlice<ID, T> {
+        IdSlice::new(self.data.as_slice())
+    }
+
+    /// Extracts a mutable slice containing the entire vector.
+    #[inline]
+    pub fn as_mut_slice(&mut self) -> MutIdSlice<ID, T> {
+        MutIdSlice::new(self.data.as_mut_slice())
+    }
+
+    #[inline]
+    pub fn range(&self, ids: IdRange<ID::Tag, ID::Handle>) -> IdSlice<ID, T> {
+        IdSlice::new(&self.data[ids.start.to_index()..ids.end.to_index()])
+    }
+
+    #[inline]
+    pub fn mut_range(&mut self, ids: IdRange<ID::Tag, ID::Handle>) -> MutIdSlice<ID, T> {
+        MutIdSlice::new(&mut self.data[ids.start.to_index()..ids.end.to_index()])
+    }
+
+    #[inline]
+    pub fn range_from(&self, id: ID) -> IdSlice<ID, T> {
+        IdSlice::new(&self.data[id.to_index()..])
+    }
+
+    #[inline]
+    pub fn mut_range_from(&mut self, id: ID) -> MutIdSlice<ID, T> {
+        MutIdSlice::new(&mut self.data[id.to_index()..])
+    }
+
+    #[inline]
+    pub fn range_to(&self, id: ID) -> IdSlice<ID, T> {
+        IdSlice::new(&self.data[..id.to_index()])
+    }
+
+    #[inline]
+    pub fn mut_range_to(&mut self, id: ID) -> MutIdSlice<ID, T> {
+        MutIdSlice::new(&mut self.data[..id.to_index()])
     }
 
     /// Return the nth element of the IdVec using an usize index rather than an Id (à la Vec).
     #[inline]
-    pub fn nth_mut(&mut self, idx: usize) -> &mut Data {
-        &mut self.data[idx]
+    pub fn nth(&self, idx: ID::Handle) -> &T {
+        &self.data[idx.to_index()]
+    }
+
+    /// Return the nth element of the IdVec using an usize index rather than an Id (à la Vec).
+    #[inline]
+    pub fn nth_mut(&mut self, idx: ID::Handle) -> &mut T {
+        &mut self.data[idx.to_index()]
     }
 
     /// Iterate over the elements of the IdVec
     #[inline]
-    pub fn iter<'l>(&'l self) -> slice::Iter<'l, Data> {
+    pub fn iter<'l>(&'l self) -> slice::Iter<'l, T> {
         self.data.iter()
     }
 
     /// Iterate over the elements of the IdVec
     #[inline]
-    pub fn iter_mut<'l>(&'l mut self) -> slice::IterMut<'l, Data> {
+    pub fn iter_mut<'l>(&'l mut self) -> slice::IterMut<'l, T> {
         self.data.iter_mut()
     }
 
     /// Add an element to the IdVec and return its Id.
     /// This method can cause the storage to be reallocated.
     #[inline]
-    pub fn push(&mut self, elt: Data) -> ID {
+    pub fn push(&mut self, elt: T) -> ID {
         let index = self.data.len();
         self.data.push(elt);
         return FromIndex::from_index(index);
+    }
+
+    /// Reserves capacity for at least additional more elements to be inserted in the given vector.
+    #[inline]
+    pub fn reserve(&mut self, additional: ID::Handle) {
+        self.data.reserve(additional.to_index());
+    }
+
+    /// Shrinks the capacity of the vector as much as possible.
+    #[inline]
+    pub fn shrink_to_fit(&mut self) {
+        self.data.shrink_to_fit();
     }
 
     /// Drop all of the contained elements and clear the IdVec's storage.
     #[inline]
     pub fn clear(&mut self) {
         self.data.clear();
+    }
+
+    /// Removes and returns the element at position index within the vector,
+    /// shifting all elements after it to the left.
+    #[inline]
+    pub fn remove(&mut self, index: ID) -> T {
+        self.data.remove(index.to_index())
+    }
+
+    /// Removes an element from the vector and returns it.
+    /// The removed element is replaced by the last element of the vector.
+    #[inline]
+    pub fn swap_remove(&mut self, index: ID) -> T {
+        self.data.swap_remove(index.to_index())
     }
 
     #[inline]
@@ -108,12 +188,12 @@ impl<ID: Identifier, Data> IdVec<ID, Data> {
     }
 }
 
-impl<ID: Identifier, Data: Default> IdVec<ID, Data> {
+impl<ID: Identifier, T: Default> IdVec<ID, T> {
     /// Set the value for a certain Id, possibly adding default values if the Id's index is Greater
     /// than the size of the underlying vector.
-    pub fn set(&mut self, id: ID, val: Data) {
+    pub fn set(&mut self, id: ID, val: T) {
         while self.len().to_index() < id.to_index() {
-            self.push(Data::default());
+            self.push(T::default());
         }
         if self.len().to_index() == id.to_index() {
             self.push(val);
@@ -123,7 +203,7 @@ impl<ID: Identifier, Data: Default> IdVec<ID, Data> {
     }
 }
 
-impl<Data: Default, ID: Identifier> IdVec<ID, Data> {
+impl<T: Default, ID: Identifier> IdVec<ID, T> {
     pub fn resize(&mut self, size: ID::Handle) {
         if size.to_index() > self.data.len() {
             let d = size.to_index() - self.data.len();
@@ -141,46 +221,46 @@ impl<Data: Default, ID: Identifier> IdVec<ID, Data> {
 
     /// Creates an IdVec with an n elements initialized to `Default::default`.
     pub fn with_len(n: ID::Handle) -> Self {
-        let mut result: IdVec<ID, Data> = IdVec::with_capacity(n);
+        let mut result: IdVec<ID, T> = IdVec::with_capacity(n);
         result.resize(n);
         return result;
     }
 }
 
-impl<ID: Identifier, Data> ops::Index<ID> for IdVec<ID, Data> {
-    type Output = Data;
-    fn index<'l>(&'l self, id: ID) -> &'l Data {
+impl<ID: Identifier, T> ops::Index<ID> for IdVec<ID, T> {
+    type Output = T;
+    fn index<'l>(&'l self, id: ID) -> &'l T {
         &self.data[id.to_index()]
     }
 }
 
-impl<ID: Identifier, Data> ops::IndexMut<ID> for IdVec<ID, Data> {
-    fn index_mut<'l>(&'l mut self, id: ID) -> &'l mut Data {
+impl<ID: Identifier, T> ops::IndexMut<ID> for IdVec<ID, T> {
+    fn index_mut<'l>(&'l mut self, id: ID) -> &'l mut T {
         &mut self.data[id.to_index()]
     }
 }
 
 
-pub struct IdSlice<'l, ID: Identifier, Data>
+pub struct IdSlice<'l, ID: Identifier, T>
 where
-    Data: 'l,
+    T: 'l,
 {
-    slice: &'l [Data],
+    slice: &'l [T],
     _idtype: PhantomData<ID>,
 }
 
-impl<'l, Data, ID: Identifier> Copy for IdSlice<'l, ID, Data>
+impl<'l, T, ID: Identifier> Copy for IdSlice<'l, ID, T>
 where
-    Data: 'l,
+    T: 'l,
 {
 }
 
-impl<'l, Data, ID: Identifier> Clone for IdSlice<'l, ID, Data>
+impl<'l, T, ID: Identifier> Clone for IdSlice<'l, ID, T>
 where
-    Data: 'l,
+    T: 'l,
 {
     #[inline]
-    fn clone(&self) -> IdSlice<'l, ID, Data> {
+    fn clone(&self) -> IdSlice<'l, ID, T> {
         IdSlice {
             slice: self.slice,
             _idtype: PhantomData,
@@ -188,12 +268,12 @@ where
     }
 }
 
-impl<'l, Data, ID: Identifier> IdSlice<'l, ID, Data>
+impl<'l, T, ID: Identifier> IdSlice<'l, ID, T>
 where
-    Data: 'l,
+    T: 'l,
 {
     #[inline]
-    pub fn new(slice: &'l [Data]) -> IdSlice<'l, ID, Data> {
+    pub fn new(slice: &'l [T]) -> IdSlice<'l, ID, T> {
         IdSlice {
             slice: slice,
             _idtype: PhantomData,
@@ -206,12 +286,12 @@ where
     }
 
     #[inline]
-    pub fn as_slice<'a>(&'a self) -> &'a [Data] {
+    pub fn untyed<'a>(&'a self) -> &'a [T] {
         self.slice
     }
 
     #[inline]
-    pub fn iter<'a>(&'a self) -> slice::Iter<'a, Data> {
+    pub fn iter<'a>(&'a self) -> slice::Iter<'a, T> {
         self.slice.iter()
     }
 
@@ -220,34 +300,48 @@ where
         IdRange::new(Zero::zero()..self.len())
     }
 
-    // TODO: index using the handle type ?
     #[inline]
-    pub fn nth(&self, idx: usize) -> &Data {
-        &self.slice[idx]
+    pub fn nth(&self, idx: ID::Handle) -> &T {
+        &self.slice[idx.to_index()]
+    }
+
+    #[inline]
+    pub fn range(&self, ids: IdRange<ID::Tag, ID::Handle>) -> IdSlice<ID, T> {
+        IdSlice::new(&self.slice[ids.start.to_index()..ids.end.to_index()])
+    }
+
+    #[inline]
+    pub fn range_from(&self, id: ID) -> IdSlice<ID, T> {
+        IdSlice::new(&self.slice[id.to_index()..])
+    }
+
+    #[inline]
+    pub fn range_to(&self, id: ID) -> IdSlice<ID, T> {
+        IdSlice::new(&self.slice[..id.to_index()])
     }
 }
 
-impl<'l, ID: Identifier, Data> ops::Index<ID> for IdSlice<'l, ID, Data>
+impl<'l, ID: Identifier, T> ops::Index<ID> for IdSlice<'l, ID, T>
 where
-    Data: 'l,
+    T: 'l,
 {
-    type Output = Data;
+    type Output = T;
     #[inline]
-    fn index<'a>(&'a self, id: ID) -> &'a Data {
+    fn index<'a>(&'a self, id: ID) -> &'a T {
         &self.slice[id.to_index()]
     }
 }
 
 
 
-pub struct MutIdSlice<'l, ID: Identifier, Data: 'l> {
-    slice: &'l mut [Data],
+pub struct MutIdSlice<'l, ID: Identifier, T: 'l> {
+    slice: &'l mut [T],
     _idtype: PhantomData<ID>,
 }
 
-impl<'l, ID: Identifier, Data: 'l> MutIdSlice<'l, ID, Data> {
+impl<'l, ID: Identifier, T: 'l> MutIdSlice<'l, ID, T> {
     #[inline]
-    pub fn new(slice: &'l mut [Data]) -> MutIdSlice<'l, ID, Data> {
+    pub fn new(slice: &'l mut [T]) -> MutIdSlice<'l, ID, T> {
         MutIdSlice {
             slice: slice,
             _idtype: PhantomData,
@@ -255,45 +349,80 @@ impl<'l, ID: Identifier, Data: 'l> MutIdSlice<'l, ID, Data> {
     }
 
     #[inline]
-    pub fn iter<'a>(&'a self) -> slice::Iter<'a, Data> {
+    pub fn untyped(&mut self) -> &mut [T] {
+        self.slice
+    }
+
+    #[inline]
+    pub fn iter<'a>(&'a self) -> slice::Iter<'a, T> {
         self.slice.iter()
     }
 
     #[inline]
-    pub fn iter_mut<'a>(&'a mut self) -> slice::IterMut<'a, Data> {
+    pub fn iter_mut<'a>(&'a mut self) -> slice::IterMut<'a, T> {
         self.slice.iter_mut()
+    }
+
+    #[inline]
+    pub fn range(&self, ids: IdRange<ID::Tag, ID::Handle>) -> IdSlice<ID, T> {
+        IdSlice::new(&self.slice[ids.start.to_index()..ids.end.to_index()])
+    }
+
+    #[inline]
+    pub fn mut_range(&mut self, ids: IdRange<ID::Tag, ID::Handle>) -> MutIdSlice<ID, T> {
+        MutIdSlice::new(&mut self.slice[ids.start.to_index()..ids.end.to_index()])
+    }
+
+    #[inline]
+    pub fn range_from(&self, id: ID) -> IdSlice<ID, T> {
+        IdSlice::new(&self.slice[id.to_index()..])
+    }
+
+    #[inline]
+    pub fn mut_range_from(&mut self, id: ID) -> MutIdSlice<ID, T> {
+        MutIdSlice::new(&mut self.slice[id.to_index()..])
+    }
+
+    #[inline]
+    pub fn range_to(&self, id: ID) -> IdSlice<ID, T> {
+        IdSlice::new(&self.slice[..id.to_index()])
+    }
+
+    #[inline]
+    pub fn mut_range_to(&mut self, id: ID) -> MutIdSlice<ID, T> {
+        MutIdSlice::new(&mut self.slice[..id.to_index()])
     }
 }
 
-impl<'l, ID: Identifier, Data: 'l> IntoIterator for IdSlice<'l, ID, Data> {
-    type Item = &'l Data;
-    type IntoIter = slice::Iter<'l, Data>;
+impl<'l, ID: Identifier, T: 'l> IntoIterator for IdSlice<'l, ID, T> {
+    type Item = &'l T;
+    type IntoIter = slice::Iter<'l, T>;
     #[inline]
-    fn into_iter(self) -> slice::Iter<'l, Data> {
+    fn into_iter(self) -> slice::Iter<'l, T> {
         self.slice.iter()
     }
 }
 
-impl<'l, ID: Identifier, Data: 'l> IntoIterator for MutIdSlice<'l, ID, Data> {
-    type Item = &'l mut Data;
-    type IntoIter = slice::IterMut<'l, Data>;
+impl<'l, ID: Identifier, T: 'l> IntoIterator for MutIdSlice<'l, ID, T> {
+    type Item = &'l mut T;
+    type IntoIter = slice::IterMut<'l, T>;
     #[inline]
-    fn into_iter(self) -> slice::IterMut<'l, Data> {
+    fn into_iter(self) -> slice::IterMut<'l, T> {
         self.slice.iter_mut()
     }
 }
 
-impl<'l, ID: Identifier, Data: 'l> ops::Index<ID> for MutIdSlice<'l, ID, Data> {
-    type Output = Data;
+impl<'l, ID: Identifier, T: 'l> ops::Index<ID> for MutIdSlice<'l, ID, T> {
+    type Output = T;
     #[inline]
-    fn index<'a>(&'a self, id: ID) -> &'a Data {
+    fn index<'a>(&'a self, id: ID) -> &'a T {
         &self.slice[id.to_index()]
     }
 }
 
-impl<'l, ID: Identifier, Data: 'l> ops::IndexMut<ID> for MutIdSlice<'l, ID, Data> {
+impl<'l, ID: Identifier, T: 'l> ops::IndexMut<ID> for MutIdSlice<'l, ID, T> {
     #[inline]
-    fn index_mut<'a>(&'a mut self, id: ID) -> &'a mut Data {
+    fn index_mut<'a>(&'a mut self, id: ID) -> &'a mut T {
         &mut self.slice[id.to_index()]
     }
 }
