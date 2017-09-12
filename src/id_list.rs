@@ -1,4 +1,4 @@
-use super::{Identifier, FromIndex};
+use super::{Identifier, FromUsize};
 use std::marker::PhantomData;
 use std::ops;
 
@@ -51,19 +51,19 @@ impl<ID: Identifier, Data, C: NullId<ID>> IdFreeList<ID, Data, C> {
         }
 
         let new_id = self.freelist;
-        let freelist_next = self.data[new_id.to_index()].list_next;
-        self.data[new_id.to_index()] = IdFreeListWrapper {
+        let freelist_next = self.data[new_id.to_usize()].list_next;
+        self.data[new_id.to_usize()] = IdFreeListWrapper {
             payload: elt,
             list_next: first,
             list_prev: C::null_id(),
         };
         if freelist_next != null_id {
-            self.data[freelist_next.to_index()].list_prev = null_id;
+            self.data[freelist_next.to_usize()].list_prev = null_id;
         }
         self.freelist = freelist_next;
 
         if first != null_id {
-            self.data[first.to_index()].list_prev = new_id;
+            self.data[first.to_usize()].list_prev = new_id;
         }
         self.first = new_id;
 
@@ -77,7 +77,7 @@ impl<ID: Identifier, Data, C: NullId<ID>> IdFreeList<ID, Data, C> {
     pub fn push(&mut self, elt: Data) -> ID {
         let null_id = C::null_id();
         let first = self.first;
-        let new_id: ID = FromIndex::from_index(self.data.len());
+        let new_id: ID = FromUsize::from_usize(self.data.len());
         self.data.push(IdFreeListWrapper {
             payload: elt,
             list_next: first,
@@ -85,7 +85,7 @@ impl<ID: Identifier, Data, C: NullId<ID>> IdFreeList<ID, Data, C> {
         });
 
         if first != null_id {
-            self.data[first.to_index()].list_prev = new_id;
+            self.data[first.to_usize()].list_prev = new_id;
         }
         self.first = new_id;
 
@@ -97,18 +97,18 @@ impl<ID: Identifier, Data, C: NullId<ID>> IdFreeList<ID, Data, C> {
     pub fn remove(&mut self, id: ID) {
         debug_assert!(self.has_id(id));
         let null_id = C::null_id();
-        let prev = self.data[id.to_index()].list_prev;
-        let next = self.data[id.to_index()].list_next;
+        let prev = self.data[id.to_usize()].list_prev;
+        let next = self.data[id.to_usize()].list_next;
         if prev != null_id {
-            self.data[prev.to_index()].list_next = next;
+            self.data[prev.to_usize()].list_next = next;
         } else {
             debug_assert!(id == self.first);
-            self.first = self.data[id.to_index()].list_next;
+            self.first = self.data[id.to_usize()].list_next;
         }
         if next != null_id {
-            self.data[next.to_index()].list_prev = prev;
+            self.data[next.to_usize()].list_prev = prev;
         }
-        let elt = &mut self.data[id.to_index()];
+        let elt = &mut self.data[id.to_usize()];
         elt.list_next = self.freelist;
         elt.list_prev = null_id;
         self.freelist = id;
@@ -133,7 +133,7 @@ impl<ID: Identifier, Data, C: NullId<ID>> IdFreeList<ID, Data, C> {
 
     /// Return true if the id is found in the list in O(N).
     pub fn has_id(&self, id: ID) -> bool {
-        if id.to_index() >= self.data.len() {
+        if id.to_usize() >= self.data.len() {
             return false;
         }
         let mut it = self.first_id();
@@ -168,7 +168,7 @@ impl<ID: Identifier, Data, C: NullId<ID>> IdFreeList<ID, Data, C> {
     /// Return the next id in the list.
     pub fn next_id(&self, id: ID) -> Option<ID> {
         assert!(self.has_id(id));
-        let next = self.data[id.to_index()].list_next;
+        let next = self.data[id.to_usize()].list_next;
         return if next == C::null_id() {
             None
         } else {
@@ -179,7 +179,7 @@ impl<ID: Identifier, Data, C: NullId<ID>> IdFreeList<ID, Data, C> {
     /// Return the previous id in the list.
     pub fn previous_id(&self, id: ID) -> Option<ID> {
         assert!(self.has_id(id));
-        let prev = self.data[id.to_index()].list_prev;
+        let prev = self.data[id.to_usize()].list_prev;
         return if prev == C::null_id() {
             None
         } else {
@@ -202,7 +202,7 @@ impl<ID: Identifier, Data, C: NullId<ID>> ops::Index<ID> for IdFreeList<ID, Data
     fn index<'l>(&'l self, id: ID) -> &'l Data {
         // Enabling assertion is very expensive
         //debug_assert!(self.has_id(id));
-        &self.data[id.to_index()].payload
+        &self.data[id.to_usize()].payload
     }
 }
 
@@ -210,7 +210,7 @@ impl<ID: Identifier, Data, C: NullId<ID>> ops::IndexMut<ID> for IdFreeList<ID, D
     fn index_mut<'l>(&'l mut self, id: ID) -> &'l mut Data {
         // Enabling assertion is very expensive
         //debug_assert!(self.has_id(id));
-        &mut self.data[id.to_index()].payload
+        &mut self.data[id.to_usize()].payload
     }
 }
 
@@ -237,7 +237,7 @@ struct MagicValue;
 #[cfg(test)]
 impl NullId<TestId> for MagicValue {
     fn null_id() -> TestId {
-        return FromIndex::from_index(::std::u32::MAX as usize);
+        return FromUsize::from_usize(::std::u32::MAX as usize);
     }
 }
 

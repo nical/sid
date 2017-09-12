@@ -1,4 +1,4 @@
-use {Id, IntegerHandle, FromIndex};
+use {Id, IntegerHandle, FromUsize};
 use std::marker::PhantomData;
 use std::fmt;
 use std::ops;
@@ -77,12 +77,12 @@ impl<T, H: IntegerHandle> IdRange<T, H> {
 
     #[inline]
     pub fn usize_start(&self) -> usize {
-        self.start.to_index()
+        self.start.to_usize()
     }
 
     #[inline]
     pub fn usize_end(&self) -> usize {
-        self.end.to_index()
+        self.end.to_usize()
     }
 
     #[inline]
@@ -91,7 +91,7 @@ impl<T, H: IntegerHandle> IdRange<T, H> {
     }
 
     #[inline]
-    pub fn raw_range(&self) -> ops::Range<H> {
+    pub fn untyped(&self) -> ops::Range<H> {
         self.start..self.end
     }
 
@@ -111,7 +111,7 @@ impl<T, H: IntegerHandle> IdRange<T, H> {
             return None;
         }
         return Some(IdRange::new(
-            self.start..FromIndex::from_index(self.end.to_index() - 1),
+            self.start..FromUsize::from_usize(self.end.to_usize() - 1),
         ));
     }
 
@@ -138,11 +138,11 @@ impl<T, H: IntegerHandle> Iterator for IdRange<T, H> {
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        return (self.len().to_index(), Some(self.len().to_index()));
+        return (self.len().to_usize(), Some(self.len().to_usize()));
     }
 
     fn count(self) -> usize {
-        self.len().to_index()
+        self.len().to_usize()
     }
 }
 

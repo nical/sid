@@ -1,4 +1,4 @@
-use {IdRange, IntegerHandle, Identifier, FromIndex, ToIndex};
+use {IdRange, IntegerHandle, Identifier, FromUsize, ToUsize};
 use std::marker::PhantomData;
 use std::fmt;
 use std::ops::{Add, Sub};
@@ -55,17 +55,17 @@ impl<T, H: IntegerHandle> Identifier for Id<T, H> {
     type Tag = T;
 }
 
-impl<T, H: ToIndex> ToIndex for Id<T, H> {
+impl<T, H: ToUsize> ToUsize for Id<T, H> {
     #[inline]
-    fn to_index(&self) -> usize {
-        self.handle.to_index()
+    fn to_usize(&self) -> usize {
+        self.handle.to_usize()
     }
 }
 
-impl<T, H: IntegerHandle> FromIndex for Id<T, H> {
+impl<T, H: IntegerHandle> FromUsize for Id<T, H> {
     #[inline]
-    fn from_index(idx: usize) -> Id<T, H> {
-        Id::new(FromIndex::from_index(idx))
+    fn from_usize(idx: usize) -> Id<T, H> {
+        Id::new(FromUsize::from_usize(idx))
     }
 }
 
