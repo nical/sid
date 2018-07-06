@@ -400,6 +400,24 @@ where
     }
 
     #[inline]
+    pub fn first_id(&self) -> Option<ID> {
+        return if self.slice.len() > 0 {
+            Some(ID::from_usize(0))
+        } else {
+            None
+        };
+    }
+
+    #[inline]
+    pub fn last_id(&self) -> Option<ID> {
+        return if self.slice.len() > 0 {
+            Some(ID::from_usize(self.slice.len() - 1))
+        } else {
+            None
+        };
+    }
+
+    #[inline]
     pub fn split_at(&self, id: ID) -> (Self, Self) {
         let (s1, s2) = self.slice.split_at(id.to_usize());
         (Self::new(s1), Self::new(s2))
