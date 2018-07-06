@@ -230,6 +230,20 @@ impl<ID: Identifier, T> IdVec<ID, T> {
             None
         };
     }
+
+    #[inline]
+    pub fn last_id(&self) -> Option<ID> {
+        return if self.data.len() > 0 {
+            Some(ID::from_usize(self.data.len() - 1))
+        } else {
+            None
+        };
+    }
+
+    #[inline]
+    pub fn ids(&self) -> IdRange<ID::Tag, ID::Handle> {
+        IdRange::new(Zero::zero()..self.len())
+    }
 }
 
 impl<ID: Identifier, T: Default> IdVec<ID, T> {
