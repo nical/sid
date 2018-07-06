@@ -75,106 +75,127 @@ impl Identifier for i64 {
 }
 
 impl ToUsize for u8 {
+    #[inline]
     fn to_usize(&self) -> usize {
         *self as usize
     }
 }
 impl ToUsize for u16 {
+    #[inline]
     fn to_usize(&self) -> usize {
         *self as usize
     }
 }
 impl ToUsize for u32 {
+    #[inline]
     fn to_usize(&self) -> usize {
         *self as usize
     }
 }
 impl ToUsize for u64 {
+    #[inline]
     fn to_usize(&self) -> usize {
         *self as usize
     }
 }
 impl ToUsize for usize {
+    #[inline]
     fn to_usize(&self) -> usize {
         *self
     }
 }
 impl ToUsize for i8 {
+    #[inline]
     fn to_usize(&self) -> usize {
         debug_assert!(*self >= 0);
         *self as usize
     }
 }
 impl ToUsize for i16 {
+    #[inline]
     fn to_usize(&self) -> usize {
         debug_assert!(*self >= 0);
         *self as usize
     }
 }
 impl ToUsize for i32 {
+    #[inline]
     fn to_usize(&self) -> usize {
         debug_assert!(*self >= 0);
         *self as usize
     }
 }
 impl ToUsize for i64 {
+    #[inline]
     fn to_usize(&self) -> usize {
         debug_assert!(*self >= 0);
         *self as usize
     }
 }
 impl ToUsize for isize {
+    #[inline]
     fn to_usize(&self) -> usize {
+        debug_assert!(*self >= 0);
         *self as usize
     }
 }
 
 impl FromUsize for u8 {
+    #[inline]
     fn from_usize(idx: usize) -> u8 {
         idx as u8
     }
 }
 impl FromUsize for u16 {
+    #[inline]
     fn from_usize(idx: usize) -> u16 {
         idx as u16
     }
 }
 impl FromUsize for u32 {
+    #[inline]
     fn from_usize(idx: usize) -> u32 {
         idx as u32
     }
 }
 impl FromUsize for u64 {
+    #[inline]
     fn from_usize(idx: usize) -> u64 {
         idx as u64
     }
 }
 impl FromUsize for usize {
+    #[inline]
     fn from_usize(idx: usize) -> usize {
         idx
     }
 }
 impl FromUsize for i8 {
+    #[inline]
     fn from_usize(idx: usize) -> i8 {
         idx as i8
     }
 }
 impl FromUsize for i16 {
+    #[inline]
     fn from_usize(idx: usize) -> i16 {
         idx as i16
     }
 }
 impl FromUsize for i32 {
+    #[inline]
     fn from_usize(idx: usize) -> i32 {
         idx as i32
     }
 }
 impl FromUsize for i64 {
+    #[inline]
     fn from_usize(idx: usize) -> i64 {
         idx as i64
     }
 }
 impl FromUsize for isize {
+    #[inline]
     fn from_usize(idx: usize) -> isize {
         idx as isize
     }
