@@ -325,6 +325,16 @@ impl<'l, ID: Identifier, T> IntoIterator for &'l mut IdVec<ID, T> {
     }
 }
 
+
+impl<ID: Identifier, T: Clone> Clone for IdVec<ID, T> {
+    fn clone(&self) -> Self {
+        IdVec {
+            data: self.data.clone(),
+            _idtype: PhantomData,
+        }
+    }
+}
+
 pub struct IdSlice<'l, ID: Identifier, T>
 where
     T: 'l,
