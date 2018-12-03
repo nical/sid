@@ -1,6 +1,6 @@
 [package]
 name = "sid"
-version = "0.5.2"
+version = "0.6.0"
 description = "Simple Id. Tiny crate providing strongly typed ids and an id-based vector."
 license = "MIT/Apache-2.0"
 authors = [ "Nicolas Silva <nical@fastmail.com>" ]
@@ -10,4 +10,4 @@ repository = "https://github.com/nical/sid"
 name = "sid"
 
 [dependencies]
-num-traits = "0.1.39"
+num-traits = "0.2"
