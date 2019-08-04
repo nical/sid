@@ -1,10 +1,10 @@
 use {Identifier, FromUsize, ToUsize, IdRange};
-use std::default::Default;
-use std::slice;
-use std::vec;
-use std::marker::PhantomData;
-use std::ops;
-use std::iter::IntoIterator;
+use core::default::Default;
+use core::slice;
+use alloc::{vec, vec::Vec};
+use core::marker::PhantomData;
+use core::ops;
+use core::iter::IntoIterator;
 use num_traits::Zero;
 
 /// Similar to Vec except that it is indexed using an Id rather than an usize index.

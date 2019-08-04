@@ -10,4 +10,4 @@ repository = "https://github.com/nical/sid"
 name = "sid"
 
 [dependencies]
-num-traits = "0.2"
+num-traits = { version = "0.2", default-features = false }
