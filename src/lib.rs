@@ -1,18 +1,21 @@
+#![no_std]
+
+extern crate alloc;
 extern crate num_traits;
 
-use std::cmp;
-use std::ops::{Add, Sub};
-use num_traits::{Zero, One};
+use num_traits::{One, Zero};
+use core::cmp;
+use core::ops::{Add, Sub};
 
 mod id;
+mod id_list;
 mod id_range;
 mod id_vector;
-mod id_list;
 
-pub use id_vector::{IdSlice, MutIdSlice, IdVec};
-pub use id_list::{IdFreeList, NullId, NoneAsNullId};
 pub use id::Id;
+pub use id_list::{IdFreeList, NoneAsNullId, NullId};
 pub use id_range::{IdRange, ReverseIdRange};
+pub use id_vector::{IdSlice, IdVec, MutIdSlice};
 
 pub trait FromUsize {
     fn from_usize(idx: usize) -> Self;
@@ -22,8 +25,8 @@ pub trait ToUsize {
     fn to_usize(&self) -> usize;
 }
 
-pub trait IntegerHandle
-    : Copy
+pub trait IntegerHandle:
+    Copy
     + Clone
     + Add<Output = Self>
     + Sub<Output = Self>
@@ -33,7 +36,8 @@ pub trait IntegerHandle
     + FromUsize
     + ToUsize
     + Zero
-    + One {
+    + One
+{
 }
 
 pub trait Identifier: Copy + FromUsize + ToUsize + PartialEq {
@@ -212,7 +216,6 @@ impl IntegerHandle for i32 {}
 impl IntegerHandle for i64 {}
 impl IntegerHandle for isize {}
 
-
 /*
 // TODO: remove it or implement traits manually
 
@@ -226,8 +229,8 @@ pub struct GenId<T, H: Copy, G> {
     pub gen: G,
 }
 
-impl<T, H: Copy + std::fmt::Display, G: std::fmt::Display> std::fmt::Debug for GenId<T, H, G> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl<T, H: Copy + core::fmt::Display, G: core::fmt::Display> core::fmt::Debug for GenId<T, H, G> {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "GenId#{}({})", self.id.handle, self.gen)
     }
 }
@@ -272,7 +275,6 @@ impl<T, H: Copy, G: Generation> Generation for GenId<T, H, G> {
 }
 */
 
-
 #[test]
 fn test_copy_id() {
     #[derive(Debug)]
@@ -294,7 +296,7 @@ fn test_copy_id() {
 
 #[test]
 fn test_reverese_id_range() {
-    use std::iter::FromIterator;
+    use core::iter::FromIterator;
     fn range(first: u16, count: u16) -> IdRange<u16, u16> {
         IdRange::new(first..(first + count))
     }

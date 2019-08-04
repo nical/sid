@@ -1,8 +1,8 @@
 use {IdRange, IntegerHandle, Identifier, FromUsize, ToUsize};
-use std::marker::PhantomData;
-use std::fmt;
-use std::ops::{Add, Sub};
-use std::hash::{Hash, Hasher};
+use core::marker::PhantomData;
+use core::fmt;
+use core::ops::{Add, Sub};
+use core::hash::{Hash, Hasher};
 use num_traits::One;
 
 #[repr(C)]

@@ -1,6 +1,7 @@
 use super::{Identifier, FromUsize};
-use std::marker::PhantomData;
-use std::ops;
+use core::marker::PhantomData;
+use core::ops;
+use alloc::vec::Vec;
 
 /// A trait that defines how to choose the null (or invalid) Id.
 pub trait NullId<ID> {
@@ -237,7 +238,7 @@ struct MagicValue;
 #[cfg(test)]
 impl NullId<TestId> for MagicValue {
     fn null_id() -> TestId {
-        return FromUsize::from_usize(::std::u32::MAX as usize);
+        return FromUsize::from_usize(::core::u32::MAX as usize);
     }
 }
 

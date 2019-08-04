@@ -1,8 +1,8 @@
 use {Id, IntegerHandle, FromUsize};
-use std::marker::PhantomData;
-use std::fmt;
-use std::ops;
-use std::cmp;
+use core::marker::PhantomData;
+use core::fmt;
+use core::ops;
+use core::cmp;
 use num_traits::Zero;
 
 pub struct IdRange<T, H = u32> {
