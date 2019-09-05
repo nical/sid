@@ -296,13 +296,15 @@ fn test_copy_id() {
 
 #[test]
 fn test_reverese_id_range() {
-    use core::iter::FromIterator;
     fn range(first: u16, count: u16) -> IdRange<u16, u16> {
         IdRange::new(first..(first + count))
     }
-    let v: Vec<Id<u16, u16>> = Vec::from_iter(ReverseIdRange::new(range(1, 5)));
-    assert_eq!(
-        v,
-        vec![Id::new(5), Id::new(4), Id::new(3), Id::new(2), Id::new(1)]
-    );
+    let mut iter = ReverseIdRange::new(range(1, 5));
+    assert_eq!(iter.next(), Some(Id::new(5)));
+    assert_eq!(iter.next(), Some(Id::new(4)));
+    assert_eq!(iter.next(), Some(Id::new(3)));
+    assert_eq!(iter.next(), Some(Id::new(2)));
+    assert_eq!(iter.next(), Some(Id::new(1)));
+    assert_eq!(iter.next(), None);
+    assert_eq!(iter.next(), None);
 }
